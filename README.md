@@ -40,7 +40,7 @@ This project implements an automated restaurant reservation confirmation system 
    WEBHOOK_BASE_URL=your_ngrok_url
    NGROK_AUTHTOKEN=your_ngrok_authtoken
    ```
-   Note: The `OUTBOUND_PHONE_NUMBER` is used as the source number for all outbound calls. It must be a valid 8x8 virtual number in Singapore format.
+   Note: The `OUTBOUND_PHONE_NUMBER` is used as the source number for all outbound calls. It must be a valid 8x8 virtual number configured in your account. Reach out to cpaas-support@8x8.com or your account manager if unsure.
 
 3. Start the application:
    ```bash
