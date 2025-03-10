@@ -23,8 +23,8 @@ This project implements an automated restaurant reservation confirmation system 
 
 1. Clone the repository:
    ```bash
-   git clone <repository-url>
-   cd 8x8_voice
+   git clone https://github.com/harrism04/voice_restaurant_ivr.git
+   cd voice_restaurant_ivr
    ```
 
 2. Set up environment variables:
@@ -64,8 +64,8 @@ If you prefer not to use Docker, you can install the application manually:
 
 1. Clone the repository:
    ```bash
-   git clone <repository-url>
-   cd 8x8_voice
+   git clone https://github.com/harrism04/voice_restaurant_ivr.git
+   cd voice_restaurant_ivr
    ```
 
 2. Create and activate a virtual environment:
