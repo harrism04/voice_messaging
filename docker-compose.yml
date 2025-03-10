@@ -1,0 +1,32 @@
+version: '3.8'
+
+services:
+  reservation-system:
+    build: .
+    ports:
+      - "5678:5678"
+    environment:
+      - EIGHT_X_EIGHT_API_KEY=${EIGHT_X_EIGHT_API_KEY}
+      - EIGHT_X_EIGHT_SUBACCOUNT_ID=${EIGHT_X_EIGHT_SUBACCOUNT_ID}
+      - OUTBOUND_PHONE_NUMBER=${OUTBOUND_PHONE_NUMBER}
+      - WEBHOOK_AUTH_TOKEN=${WEBHOOK_AUTH_TOKEN}
+      - WEBHOOK_BASE_URL=${WEBHOOK_BASE_URL}
+    volumes:
+      - ./.env:/app/.env
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5678/docs"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  ngrok:
+    image: ngrok/ngrok:latest
+    ports:
+      - "4040:4040"  # Ngrok web interface
+    environment:
+      - NGROK_AUTHTOKEN=${NGROK_AUTHTOKEN}
+    command:
+      - "http"
+      - "reservation-system:5678"
+    depends_on:
+      - reservation-system 

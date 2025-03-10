@@ -1,0 +1,10 @@
+version: 2
+tunnels:
+  voice-app:
+    addr: 5678
+    proto: http
+    basic_auth:
+      - "admin:your_webhook_auth_token"  # Same as WEBHOOK_AUTH_TOKEN in .env
+    request_headers:
+      add:
+        - "Authorization: your_webhook_auth_token"  # Same as WEBHOOK_AUTH_TOKEN in .env 
