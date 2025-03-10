@@ -1,4 +1,4 @@
-# 8x8 Voice API - Restaurant Reservation Confirmation System
+# 8x8 Voice API (CPaaS) - Restaurant Reservation Confirmation System
 
 This project implements an automated restaurant reservation confirmation system using the 8x8 Voice API. It makes outbound calls to customers to confirm their restaurant reservations using an Interactive Voice Response (IVR) system.
 
@@ -13,11 +13,11 @@ This project implements an automated restaurant reservation confirmation system 
 ## Prerequisites
 
 - Docker and Docker Compose
-- 8x8 Account with:
+- 8x8 Connect Account with:
   - API Key
   - Subaccount ID
   - Virtual Number (for outbound calls)
-- Ngrok account with authtoken
+- Ngrok account with authtoken for local testing
 
 ## Quick Start with Docker
 
