@@ -121,11 +121,21 @@ If you prefer not to use Docker, you can install the application manually:
 
 ## Making a Test Call
 
-Use curl or any API client to make a test call:
+Use curl or any API client to make a test call. First, create a Base64 encoded string of `admin:your_webhook_auth_token`:
+
+```bash
+# On Mac/Linux
+echo -n "admin:your_webhook_auth_token" | base64
+
+# On Windows PowerShell
+[Convert]::ToBase64String([Text.Encoding]::UTF8.GetBytes("admin:your_webhook_auth_token"))
+```
+
+Then use the encoded string in your API call:
 
 ```bash
 curl --location 'http://localhost:5678/api/make-call' \
---header 'Authorization: Basic EIGHT_X_EIGHT_API_KEY' \
+--header 'Authorization: Basic YOUR_BASE64_ENCODED_STRING' \
 --header 'Content-Type: application/json' \
 --data '{
     "orderId": "RES123",
@@ -135,7 +145,13 @@ curl --location 'http://localhost:5678/api/make-call' \
 }'
 ```
 
-Note: Replace the Authorization header with your Base64 encoded `admin:WEBHOOK_AUTH_TOKEN`.
+Example:
+- If your `WEBHOOK_AUTH_TOKEN` is `secret123`
+- Base64 encode `admin:secret123` → `YWRtaW46c2VjcmV0MTIz`
+- Use `Authorization: Basic YWRtaW46c2VjcmV0MTIz` in the header
+
+Note: 
+- The call will be made from the OUTBOUND_PHONE_NUMBER specified in your .env file
 
 ## API Documentation
 
@@ -144,7 +160,7 @@ Note: Replace the Authorization header with your Base64 encoded `admin:WEBHOOK_A
 1. `POST /api/make-call`
    - Makes an outbound call to confirm a reservation
    - Uses OUTBOUND_PHONE_NUMBER from .env as the source number
-   - Requires Basic Auth
+   - Requires Basic Auth (admin:WEBHOOK_AUTH_TOKEN encoded in Base64)
    - Request body example:
      ```json
      {
@@ -154,7 +170,6 @@ Note: Replace the Authorization header with your Base64 encoded `admin:WEBHOOK_A
          "reservationTime": "2025-04-20T19:30:00Z"
      }
      ```
-
 
 2. `POST /api/webhooks/vca`
    - Handles Voice Call Action webhooks
@@ -177,7 +192,7 @@ Note: Replace the Authorization header with your Base64 encoded `admin:WEBHOOK_A
 ## Project Structure
 
 ```
-8x8_voice/
+voice_restaurant_ivr/
 ├── main.py              # Main FastAPI application
 ├── requirements.txt     # Python dependencies
 ├── Dockerfile          # Docker container configuration
@@ -219,6 +234,3 @@ The application includes robust error handling for:
 - Basic Authentication for API endpoints
 - Token-based authentication for webhooks
 - Environment variables for sensitive data
-- No hardcoded credentials
-
-
