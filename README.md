@@ -35,7 +35,7 @@ This project implements an automated restaurant reservation confirmation system 
    ```
    EIGHT_X_EIGHT_API_KEY=your_api_key_from_connect_portal
    EIGHT_X_EIGHT_SUBACCOUNT_ID=your_subaccount_id
-   OUTBOUND_PHONE_NUMBER=your_virtual_number  # Must be in Singapore format: +6568332042
+   OUTBOUND_PHONE_NUMBER=your_virtual_number  # Must be in international format: +6568332042
    WEBHOOK_AUTH_TOKEN=your_randomly_generated_webhook_auth_token
    WEBHOOK_BASE_URL=your_ngrok_url
    NGROK_AUTHTOKEN=your_ngrok_authtoken
