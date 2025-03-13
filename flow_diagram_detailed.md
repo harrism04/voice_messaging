@@ -53,3 +53,32 @@ sequenceDiagram
         APISvc-->>LB: Return 200 OK
         LB-->>Voice8x8: Forward acknowledgement
     end
+
+
+## Flow Description
+
+1. **Reservation Confirmation Request**
+  - Restaurant Platform sends call request with reservation details
+  - Request routes through Load Balancer to Integration Service
+  - Service stores reservation context in Database
+  - Service configures call flow with 8x8 Voice API
+  - 8x8 initiates outbound call 30 minutes before reservation
+  - Customer receives call with reservation details
+  - Confirmation responses flow back through the system
+
+2. **DTMF Processing Flow**
+  - Customer presses 1 (confirm) or 0 (cancel) on their phone
+  - 8x8 Voice API sends VCA webhook with DTMF input
+  - Request routes to Integration Service
+  - Service updates reservation status in Database
+  - Response flows back to 8x8 Voice API
+  - Customer hears confirmation/cancellation message
+  - Call terminates
+
+3. **Session Summary Processing**
+  - Call ends with customer
+  - 8x8 Voice API sends Voice Session Summary with call metrics
+  - Summary routes to Integration Service
+  - Service retrieves context and persists call analytics
+  - Service sends real-time update to Restaurant Platform
+  - System acknowledges receipt of summary
