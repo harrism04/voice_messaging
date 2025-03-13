@@ -1,4 +1,3 @@
-
 sequenceDiagram
     participant ResPlatform as "Restaurant Platform"
     participant LB as "Load Balancer"
