@@ -1,4 +1,4 @@
-```mermaid
+
 sequenceDiagram
     participant ResPlatform as "Restaurant Platform"
     participant LB as "Load Balancer"
@@ -53,4 +53,3 @@ sequenceDiagram
         APISvc-->>LB: Return 200 OK
         LB-->>Voice8x8: Forward acknowledgement
     end
-    ```
