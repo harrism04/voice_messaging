@@ -53,7 +53,7 @@ sequenceDiagram
         APISvc-->>LB: Return 200 OK
         LB-->>Voice8x8: Forward acknowledgement
     end
-
+```
 
 ## Flow Description
 
