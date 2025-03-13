@@ -2,6 +2,18 @@
 
 This project implements an automated appointment confirmation system using the 8x8 Voice API. It makes outbound calls to customers to confirm their appointments using an Interactive Voice Response (IVR) system.
 
+## Common Use Cases
+
+This system can be adapted for various scenarios, including:
+
+- Medical appointments and healthcare consultations
+- Restaurant reservations and dining bookings
+- Salon and spa services
+- Vehicle service appointments and maintenance
+- Professional consultations (legal, financial, real estate)
+
+Each use case can be implemented by customizing the voice prompts and workflow in the application configuration.
+
 ## Features
 
 - Outbound calls to confirm appointments or reservations
