@@ -9,7 +9,7 @@ curl -X POST "https://voice.wavecell.com/api/v1/subaccounts/${EIGHT_X_EIGHT_SUBA
 -H "Content-Type: application/json" \
 -d '{
   "validUntil": "2024-01-20T20:30:00Z",
-  "clientActionId": "RES123_20250520193000_TestRestaurant",
+  "clientActionId": "APT123_20250520193000_BusinessName",
   "callflow": [
     {
       "action": "makeCall",
@@ -21,7 +21,7 @@ curl -X POST "https://voice.wavecell.com/api/v1/subaccounts/${EIGHT_X_EIGHT_SUBA
     {
       "action": "sayAndCapture",
       "params": {
-        "promptMessage": "Hello, you have a reservation at Test Restaurant at 7:30 PM made through our platform. Will you be arriving on time? If yes, press one. If you wish to cancel, press zero.",
+        "promptMessage": "Hello, you have an appointment at Business Name at 7:30 PM made through our platform. Will you be arriving on time? If yes, press one. If you wish to cancel, press zero.",
         "voiceProfile": "en-US-BenjaminRUS",
         "repetition": 1,
         "speed": 1,
@@ -85,12 +85,12 @@ curl -X POST "https://voice.wavecell.com/api/v1/subaccounts/${EIGHT_X_EIGHT_SUBA
 ### Response for Confirmation (Digit 1)
 ```json
 {
-  "clientActionId": "RES123_20250520193000_TestRestaurant",
+  "clientActionId": "APT123_20250520193000_BusinessName",
   "callflow": [
     {
       "action": "say",
       "params": {
-        "text": "Thank you for confirming. We look forward to seeing you at your reservation time.",
+        "text": "Thank you for confirming. We look forward to seeing you at your appointment time.",
         "voiceProfile": "en-US-BenjaminRUS",
         "speed": 1,
         "repetition": 1
@@ -106,12 +106,12 @@ curl -X POST "https://voice.wavecell.com/api/v1/subaccounts/${EIGHT_X_EIGHT_SUBA
 ### Response for Cancellation (Digit 0)
 ```json
 {
-  "clientActionId": "RES123_20250520193000_TestRestaurant",
+  "clientActionId": "APT123_20250520193000_BusinessName",
   "callflow": [
     {
       "action": "say",
       "params": {
-        "text": "Your reservation has been cancelled. Thank you for letting us know.",
+        "text": "Your appointment has been cancelled. Thank you for letting us know.",
         "voiceProfile": "en-US-BenjaminRUS",
         "speed": 1,
         "repetition": 1
@@ -190,7 +190,7 @@ Simple 200 OK response is sufficient for VSS webhook.
 
 ## Notes
 - All webhook endpoints require authentication token in the Authorization header
-- The `clientActionId` format is: `{orderId}_{reservationTimestamp}_{sanitizedRestaurantName}`
+- The `clientActionId` format is: `{orderId}_{appointmentTimestamp}_{sanitizedBusinessName}`
 - The `validUntil` parameter is set to 1 hour from the time of call initiation
 - DTMF timeout is set to 10 seconds (10000ms)
 - Overall timeout for input capture is set to 20 seconds (20000ms)

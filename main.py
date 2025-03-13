@@ -1,13 +1,17 @@
 from fastapi import FastAPI, HTTPException, Header, Request
+from typing import Optional
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel
 from datetime import datetime, timedelta
 import httpx
 import os
-from typing import Optional
-from dotenv import load_dotenv
-import logging
 import json
+import requests
+import docker
+import time
+import logging
+import subprocess
+from dotenv import load_dotenv
 
 # Load environment variables
 load_dotenv()
@@ -26,11 +30,11 @@ app = FastAPI()
 VOICE_API_BASE_URL = "https://voice.wavecell.com/api/v1"
 
 # Models
-class Reservation(BaseModel):
+class Appointment(BaseModel):
     orderId: str
     customerPhone: str
-    restaurantName: str
-    reservationTime: datetime
+    businessName: str
+    appointmentTime: datetime
 
 # In-memory store for active calls
 class CallStore:
@@ -88,9 +92,9 @@ async def log_requests(request: Request, call_next):
 
 # Make call endpoint
 @app.post("/api/make-call")
-async def make_call(reservation: Reservation, authorization: str = Header(None)):
-    await verify_auth(authorization)
-    
+async def make_call(appointment: Appointment, authorization: str = Header(None)):
+    logger.info(f"Request body: {appointment.dict()}")
+    logger.info(f"Authorization header: {authorization}")
     # Get environment variables
     api_key = os.getenv("EIGHT_X_EIGHT_API_KEY")
     subaccount_id = os.getenv("EIGHT_X_EIGHT_SUBACCOUNT_ID")
@@ -119,25 +123,25 @@ async def make_call(reservation: Reservation, authorization: str = Header(None))
     
     try:
         # Format time for voice message
-        formatted_time = reservation.reservationTime.strftime("%I:%M %p")
+        formatted_time = appointment.appointmentTime.strftime("%I:%M %p")
         
         # Generate client action ID with readable datetime
-        formatted_datetime = reservation.reservationTime.strftime("%Y%m%d_%H%M")
-        sanitized_restaurant_name = reservation.restaurantName.replace(' ', '_')
-        client_action_id = f"{reservation.orderId}_{formatted_datetime}_{sanitized_restaurant_name}"
+        formatted_datetime = appointment.appointmentTime.strftime("%Y%m%d_%H%M")
+        sanitized_business_name = appointment.businessName.replace(' ', '_')
+        client_action_id = f"{appointment.orderId}_{formatted_datetime}_{sanitized_business_name}"
         
         # Set validUntil to 1 hour from now
         valid_until = (datetime.utcnow() + timedelta(hours=1)).strftime("%Y-%m-%dT%H:%M:%SZ")
         
         # Format phone numbers for API
         source_number = outbound_phone.lstrip('+')
-        destination_number = reservation.customerPhone.lstrip('+')
+        destination_number = appointment.customerPhone.lstrip('+')
         
         # Log phone number details for debugging
         logger.info(f"Phone number details:")
         logger.info(f"Original source (from .env): {outbound_phone}")
         logger.info(f"Formatted source: {source_number}")
-        logger.info(f"Original destination: {reservation.customerPhone}")
+        logger.info(f"Original destination: {appointment.customerPhone}")
         logger.info(f"Formatted destination: {destination_number}")
         
         # Validate Singapore phone numbers (must be 65 + 8 digits)
@@ -173,7 +177,7 @@ async def make_call(reservation: Reservation, authorization: str = Header(None))
                 {
                     "action": "sayAndCapture",
                     "params": {
-                        "promptMessage": f"Hello, you have a reservation at {reservation.restaurantName} at {formatted_time} made through our platform. Will you be arriving on time? If yes, press one. If you wish to cancel, press zero.",
+                        "promptMessage": f"Hello, you have an appointment at {appointment.businessName} at {formatted_time} made through our platform. Will you be arriving on time? If yes, press one. If you wish to cancel, press zero.",
                         "voiceProfile": "en-US-BenjaminRUS",
                         "repetition": 2,
                         "speed": 1,
@@ -218,7 +222,7 @@ async def make_call(reservation: Reservation, authorization: str = Header(None))
                 
             call_store.add_call(response_data["sessionId"], {
                 "state": "initial",
-                "reservation": reservation.dict(),
+                "appointment": appointment.dict(),
                 "formatted_time": formatted_time,
                 "client_action_id": client_action_id,
                 "session_id": response_data["sessionId"]
@@ -241,7 +245,6 @@ async def make_call(reservation: Reservation, authorization: str = Header(None))
 # VCA webhook endpoint
 @app.post("/api/webhooks/vca")
 async def vca_webhook(request: Request, authorization: str = Header(None)):
-    await verify_auth(authorization)
     
     # Get raw webhook data
     raw_body = await request.body()
@@ -273,7 +276,7 @@ async def vca_webhook(request: Request, authorization: str = Header(None)):
         }
         call_store.add_call(session_id, call_data)
     
-    # Prepare response
+    # Process the IVR response based on the current state and input
     response = None
     if dtmf_input:
         if dtmf_input == "1":
@@ -283,7 +286,7 @@ async def vca_webhook(request: Request, authorization: str = Header(None)):
                     {
                         "action": "say",
                         "params": {
-                            "text": "Thank you for confirming. We look forward to seeing you at your reservation time.",
+                            "text": "Thank you for confirming. We look forward to seeing you at your appointment time.",
                             "voiceProfile": "en-US-BenjaminRUS",
                             "repetition": 1,
                             "speed": 1
@@ -303,7 +306,7 @@ async def vca_webhook(request: Request, authorization: str = Header(None)):
                     {
                         "action": "say",
                         "params": {
-                            "text": "Your reservation has been cancelled. Thank you for letting us know.",
+                            "text": "Your appointment has been cancelled. Thank you for letting us know.",
                             "voiceProfile": "en-US-BenjaminRUS",
                             "repetition": 1,
                             "speed": 1
@@ -340,7 +343,6 @@ async def vca_webhook(request: Request, authorization: str = Header(None)):
 # VSS webhook endpoint
 @app.post("/api/webhooks/vss")
 async def vss_webhook(request: Request, authorization: str = Header(None)):
-    await verify_auth(authorization)
     
     # Get raw webhook data
     raw_body = await request.body()
@@ -361,7 +363,9 @@ async def vss_webhook(request: Request, authorization: str = Header(None)):
 @app.on_event("startup")
 async def startup_event():
     logger.info(f"Server starting up")
-    logger.info(f"Webhook base URL: {os.getenv('WEBHOOK_BASE_URL')}")
-    logger.info(f"Configure these webhook URLs in 8x8 Connect console:")
-    logger.info(f"VCA Webhook URL: {os.getenv('WEBHOOK_BASE_URL')}/api/webhooks/vca")
-    logger.info(f"VSS Webhook URL: {os.getenv('WEBHOOK_BASE_URL')}/api/webhooks/vss") 
+    # 8x8 API details
+    api_key = os.getenv("EIGHT_X_EIGHT_API_KEY")
+    subaccount_id = os.getenv("EIGHT_X_EIGHT_SUBACCOUNT_ID")
+
+    # Construct the webhook URLs
+    vca_webhook_url = "https://enormously-balanced-lemur.ngrok-free.app/api/webhooks/vca"
