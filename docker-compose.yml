@@ -1,32 +1,55 @@
 version: '3.8'
-
 services:
   reservation-system:
     build: .
     ports:
-      - "5678:5678"
+      - '5678:5678'
     environment:
-      - EIGHT_X_EIGHT_API_KEY=${EIGHT_X_EIGHT_API_KEY}
-      - EIGHT_X_EIGHT_SUBACCOUNT_ID=${EIGHT_X_EIGHT_SUBACCOUNT_ID}
-      - OUTBOUND_PHONE_NUMBER=${OUTBOUND_PHONE_NUMBER}
-      - WEBHOOK_AUTH_TOKEN=${WEBHOOK_AUTH_TOKEN}
-      - WEBHOOK_BASE_URL=${WEBHOOK_BASE_URL}
+      - 'EIGHT_X_EIGHT_API_KEY=${EIGHT_X_EIGHT_API_KEY}'
+      - 'EIGHT_X_EIGHT_SUBACCOUNT_ID=${EIGHT_X_EIGHT_SUBACCOUNT_ID}'
+      - 'OUTBOUND_PHONE_NUMBER=${OUTBOUND_PHONE_NUMBER}'
+      - 'WEBHOOK_AUTH_TOKEN=${WEBHOOK_AUTH_TOKEN}'
+      - 'WEBHOOK_BASE_URL=${WEBHOOK_BASE_URL}'
     volumes:
-      - ./.env:/app/.env
+      - './.env:/app/.env'
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:5678/docs"]
+      test:
+        - CMD
+        - curl
+        - '-f'
+        - 'http://localhost:5678/docs'
       interval: 30s
       timeout: 10s
       retries: 3
 
-  ngrok:
-    image: ngrok/ngrok:latest
+  # Simple ngrok configuration with static domain
+  # ngrok:
+  #   image: 'ngrok/ngrok:latest'
+  #   platform: linux/amd64
+  #   ports:
+  #     - '4040:4040'
+  #   volumes:
+  #     - './ngrok.yml:/etc/ngrok.yml'
+  #   environment:
+  #     - 'NGROK_AUTHTOKEN=${NGROK_AUTHTOKEN}'
+  #   command: ["ngrok", "http", "reservation-system:5678"]
+  #   depends_on:
+  #     reservation-system:
+  #       condition: service_started
+
+  # OPTION 2: Use custom ngrok image with latest version
+  ngrok-custom:
+    build:
+      context: .
+      dockerfile: Dockerfile.ngrok
     ports:
-      - "4040:4040"  # Ngrok web interface
+      - '4040:4040'
+    volumes:
+      - './.env:/app/.env'
     environment:
-      - NGROK_AUTHTOKEN=${NGROK_AUTHTOKEN}
-    command:
-      - "http"
-      - "reservation-system:5678"
+      - 'NGROK_AUTHTOKEN=${NGROK_AUTHTOKEN}'
+      - 'NGROK_PORT=reservation-system:5678'
+      - 'NGROK_OPTS=--log=stdout --domain=enormously-balanced-lemur.ngrok-free.app'
     depends_on:
-      - reservation-system 
+      reservation-system:
+        condition: service_started
