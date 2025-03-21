@@ -46,7 +46,7 @@ While there are alternatives to ngrok, such as:
 
 Please note that this project's Docker configuration, scripts, and overall implementation are specifically designed for ngrok. Using any alternative would require significant changes to the Docker setup, configuration files, and possibly the application code.
 
-## Quick Start with Docker
+## Quick Start with Docker (Recommended)
 
 1. Clone the repository:
    ```bash
