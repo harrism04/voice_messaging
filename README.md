@@ -245,7 +245,9 @@ Example:
 Note: The call will be made from the OUTBOUND_PHONE_NUMBER specified in your .env file
 
 </details>
+
 ## API Documentation
+
 <details>
   <summary>Available Endpoints</summary>
 
@@ -270,26 +272,33 @@ Note: The call will be made from the OUTBOUND_PHONE_NUMBER specified in your .en
    - Handles Voice Session Summary webhooks from 8x8
 
 </details>
+
  <details> <summary>Call Flow</summary>
-1. System makes an outbound call to the customer
-2. Plays a message with appointment details
-3. Customer inputs DTMF:
-   - Press 1 to confirm
-   - Press 0 to cancel
-4. System responds with confirmation/cancellation message
-5. Call ends with appropriate status
+
+  1. System makes an outbound call to the customer
+  2. Plays a message with appointment details
+  3. Customer inputs DTMF:
+     - Press 1 to confirm
+     - Press 0 to cancel
+  4. System responds with confirmation/cancellation message
+  5. Call ends with appropriate status
+
 </details>
 
 ## Additional Information
+
 <details>
+  
   <summary>Logging</summary>
+  
 The application includes detailed console logging for:
-- Incoming requests (method, URL, headers)
-- Phone number formatting and validation
-- API calls to 8x8 (requests and responses)
-- Call state changes
-- Webhook events
-- Error conditions
+  - Incoming requests (method, URL, headers)
+  - Phone number formatting and validation
+  - API calls to 8x8 (requests and responses)
+  - Call state changes
+  - Webhook events
+  - Error conditions
 
 Logs are written to stdout and can be monitored in real-time through the console.
+
 </details>
