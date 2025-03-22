@@ -1,12 +1,28 @@
 # System Interaction Flow Diagram
 
 ```mermaid
+%%{init: {
+  'theme': 'base', 
+  'themeVariables': {
+    'primaryColor': '#BB2528',
+    'primaryTextColor': '#fff',
+    'primaryBorderColor': '#7C0000',
+    'lineColor': '#F8B229',
+    'secondaryColor': '#006100',
+    'tertiaryColor': '#fff',
+    'textColor': 'var(--color-fg-default)',
+    'noteTextColor': 'var(--color-fg-default)',
+    'noteBkgColor': '#fff5ad',
+    'noteTextColor': '#333',
+    'edgeLabelBackground': '#fff',
+    'background': 'transparent'
+  }
+}}%%
 sequenceDiagram
     participant Platform as Restaurant Platform
     participant Middleware as Integration Middleware
     participant Voice8x8 as 8x8 Voice API
     participant Customer as Customer
-
     rect rgb(200, 220, 255)
         note right of Platform: 1. Reservation Confirmation (30 min before)
         Platform->>Middleware: Send reservation data
@@ -16,7 +32,6 @@ sequenceDiagram
         Customer->>Voice8x8: Answer call
         Voice8x8->>Customer: Play reservation details and prompt for input
     end
-
     rect rgb(220, 255, 220)
         note right of Customer: 2. Customer Response
         Customer->>Voice8x8: DTMF input (1=confirm, 0=cancel)
@@ -24,7 +39,6 @@ sequenceDiagram
         Middleware->>Platform: API call: update reservation status
         Voice8x8->>Customer: Play confirmation/cancellation message
     end
-
     rect rgb(255, 220, 220)
         note right of Voice8x8: 3. Call Summary
         Voice8x8->>Middleware: Webhook: session summary
