@@ -18,12 +18,12 @@
   }
 }}%%
 sequenceDiagram
-    participant Platform as Restaurant Platform
+    participant Platform as Scheduling Platform
     participant Middleware as Integration Middleware
     participant Voice8x8 as 8x8 Voice API
     participant Customer as Customer
     rect rgb(100, 150, 220)
-        note right of Platform: 1. Reservation Confirmation (30 min before)
+        note right of Platform: 1. Appointment Confirmation (30 min before)
         Platform->>Middleware: Send reservation data
         Note over Platform,Middleware: Triggered 30 minutes before reservation time
         Middleware->>Voice8x8: POST callflows API request
