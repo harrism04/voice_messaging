@@ -297,7 +297,7 @@ Note: The call will be made from the OUTBOUND_PHONE_NUMBER specified in your .en
   2. https://dashboard.ngrok.com/ → "Traffic Inspector" in the left menu
 </details>
 
-## 🎥 Video Walkthroughs
+## 🎥 Video Walkthrough
   
   <div>
     <a href="https://www.loom.com/share/0b03f0c84b494eab8cd86e1087eca861">
