@@ -9,7 +9,7 @@ This project implements an automated appointment confirmation system using the 8
 - [Setup Guide](#-setup-guide)
 - [Making Test Calls](#-making-a-test-call)
 - [API Documentation](#-api-documentation)
-- [Additional Information](#-additional-information)
+- [Additional Information](#ℹ%EF%B8%8F-additional-information)
 
 ## 🎯 Common Use Cases
 
