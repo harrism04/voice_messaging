@@ -3,13 +3,13 @@
 This project implements an automated appointment confirmation system using the 8x8 Voice API. It makes outbound calls to customers to confirm their appointments using an Interactive Voice Response (IVR) system.
 
 ## 📋 Table of Contents
-- [Common Use Cases](#common-use-cases)
-- [Features](#features)
-- [Prerequisites](#prerequisites)
-- [Setup Guide](#setup-guide)
-- [Making Test Calls](#making-a-test-call)
-- [API Documentation](#api-documentation)
-- [Additional Information](#additional-information)
+- [Common Use Cases](#-common-use-cases)
+- [Features](#-features)
+- [Prerequisites](#-prerequisites)
+- [Setup Guide](#-setup-guide)
+- [Making Test Calls](#-making-a-test-call)
+- [API Documentation](#-api-documentation)
+- [Additional Information](#-additional-information)
 
 ## 🎯 Common Use Cases
 
