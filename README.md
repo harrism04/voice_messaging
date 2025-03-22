@@ -10,6 +10,7 @@ This project implements an automated appointment confirmation system using the 8
 - [Making Test Calls](#-making-a-test-call)
 - [API Documentation](#-api-documentation)
 - [Additional Information](#ℹ%EF%B8%8F-additional-information)
+- [Video Walkthrough](#-video-walkthroughs)
 
 ## 🎯 Common Use Cases
 
@@ -288,17 +289,30 @@ Note: The call will be made from the OUTBOUND_PHONE_NUMBER specified in your .en
 ## ℹ️ Additional Information
 
 <details>
-  
   <summary>📝 Logging</summary>
   
-The application includes detailed console logging for:
-  - Incoming requests (method, URL, headers)
-  - Phone number formatting and validation
-  - API calls to 8x8 (requests and responses)
-  - Call state changes
-  - Webhook events
-  - Error conditions
-
-Logs are written to stdout and can be monitored in real-time through the console.
-
+  You can view logs of inbound/outbound API requests via ngrok's Traffic Inspector by going to:
+  
+  1. http://localhost:4040/ (legacy but cleaner interface)
+  2. https://dashboard.ngrok.com/ → "Traffic Inspector" in the left menu
 </details>
+
+## 🎥 Video Walkthroughs
+  
+  <div>
+    <a href="https://www.loom.com/share/0b03f0c84b494eab8cd86e1087eca861">
+      <p>Code Implementation Walkthrough - Watch Video</p>
+    </a>
+    <a href="https://www.loom.com/share/0b03f0c84b494eab8cd86e1087eca861">
+      <img style="max-width:300px;" src="https://cdn.loom.com/sessions/thumbnails/0b03f0c84b494eab8cd86e1087eca861-with-play.gif">
+    </a>
+  </div>
+  
+  <div>
+    <a href="https://www.loom.com/share/ace1f2a8c546482eb66ffd88c11b5bdc">
+      <p>Walkthrough ngrok Traffic Inspector for 8x8 Voice Call - Watch Video</p>
+    </a>
+    <a href="https://www.loom.com/share/ace1f2a8c546482eb66ffd88c11b5bdc">
+      <img style="max-width:300px;" src="https://cdn.loom.com/sessions/thumbnails/ace1f2a8c546482eb66ffd88c11b5bdc-with-play.gif">
+    </a>
+  </div>
