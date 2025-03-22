@@ -18,31 +18,31 @@
   }
 }}%%
 sequenceDiagram
-    participant Platform as Scheduling Platform
+    participant Provider as Service Provider
     participant Middleware as Integration Middleware
     participant Voice8x8 as 8x8 Voice API
-    participant Customer as Customer
+    participant Client as Client
     rect rgb(100, 150, 220)
-        note right of Platform: 1. Appointment Confirmation (30 min before)
-        Platform->>Middleware: Send reservation data
-        Note over Platform,Middleware: Triggered 30 minutes before reservation time
+        note right of Provider: 1. Appointment Confirmation (30 min before)
+        Provider->>Middleware: Send appointment data
+        Note over Provider,Middleware: Triggered 30 minutes before scheduled time
         Middleware->>Voice8x8: POST callflows API request
-        Voice8x8->>Customer: Initiate outbound call
-        Customer->>Voice8x8: Answer call
-        Voice8x8->>Customer: Play reservation details and prompt for input
+        Voice8x8->>Client: Initiate outbound call
+        Client->>Voice8x8: Answer call
+        Voice8x8->>Client: Play appointment details and prompt for input
     end
     rect rgb(100, 180, 120)
-        note right of Customer: 2. Customer Response
-        Customer->>Voice8x8: DTMF input (1=confirm, 0=cancel)
-        Voice8x8->>Middleware: Webhook: customer response
-        Middleware->>Platform: API call: update reservation status
-        Voice8x8->>Customer: Play confirmation/cancellation message
+        note right of Client: 2. Client Response
+        Client->>Voice8x8: DTMF input (1=confirm, 0=cancel)
+        Voice8x8->>Middleware: Webhook: client response
+        Middleware->>Provider: API call: update appointment status
+        Voice8x8->>Client: Play confirmation/cancellation message
     end
     rect rgb(200, 120, 120)
         note right of Voice8x8: 3. Call Summary
         Voice8x8->>Middleware: Webhook: session summary
-        Middleware->>Platform: API call: final status update
-        Note over Middleware,Platform: Complete call details and status
+        Middleware->>Provider: API call: final status update
+        Note over Middleware,Provider: Complete call details and status
     end
 ```
 
