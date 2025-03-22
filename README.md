@@ -1,8 +1,8 @@
-# 8x8 Voice API (CPaaS) - Appointment Confirmation System
+# 📞 8x8 Voice API (CPaaS) - Appointment Confirmation System
 
 This project implements an automated appointment confirmation system using the 8x8 Voice API. It makes outbound calls to customers to confirm their appointments using an Interactive Voice Response (IVR) system.
 
-## Table of Contents
+## 📋 Table of Contents
 - [Common Use Cases](#common-use-cases)
 - [Features](#features)
 - [Prerequisites](#prerequisites)
@@ -11,7 +11,7 @@ This project implements an automated appointment confirmation system using the 8
 - [API Documentation](#api-documentation)
 - [Additional Information](#additional-information)
 
-## Common Use Cases
+## 🎯 Common Use Cases
 
 This system can be adapted for various scenarios, including:
 
@@ -23,7 +23,7 @@ This system can be adapted for various scenarios, including:
 
 Each use case can be implemented by customizing the voice prompts and workflow in the application configuration.
 
-## Features
+## ✨ Features
 
 - Outbound calls to confirm appointments or reservations
 - Interactive voice menu for customers to confirm or cancel
@@ -31,10 +31,10 @@ Each use case can be implemented by customizing the voice prompts and workflow i
 - Session tracking for call state management
 - Detailed logging for debugging and monitoring
 
-## Prerequisites
+## 📋 Prerequisites
 
 <details>
-  <summary>Required accounts and resources</summary>
+  <summary>🔑 Required accounts and resources</summary>
   
   - Docker and Docker Compose
   - 8x8 Connect Account with:
@@ -45,7 +45,7 @@ Each use case can be implemented by customizing the voice prompts and workflow i
 </details>
 
 <details>
-  <summary>Setting Up Ngrok</summary>
+  <summary>🔄 Setting Up Ngrok</summary>
   
   This project requires ngrok with a static domain for webhook handling:
 
@@ -61,10 +61,10 @@ Each use case can be implemented by customizing the voice prompts and workflow i
   Please note that this project's Docker configuration, scripts, and overall implementation are specifically designed for ngrok. Using any alternative would require significant changes to the Docker setup, configuration files, and possibly the application code.
 </details>
 
-## Setup Guide
+##  🚀 Setup Guide
 
 <details>
-  <summary>Quick Start with Docker (Recommended)</summary>
+  <summary>🐳 Quick Start with Docker (Recommended)</summary>
   
   1. Clone the repository:
      ```bash
@@ -129,7 +129,7 @@ Each use case can be implemented by customizing the voice prompts and workflow i
 </details>
 
 <details>
-  <summary>Manual Installation (Alternative)</summary>
+  <summary>⚙️ Manual Installation (Alternative)</summary>
   
   If you prefer not to use Docker, you can install the application manually:
 
@@ -209,10 +209,10 @@ Each use case can be implemented by customizing the voice prompts and workflow i
      ```
 </details>
 
-## Making a Test Call
+## 💻 Making a Test Call
 
 <details>
-  <summary>Testing with cURL</summary>
+  <summary>🧪 Testing with cURL</summary>
   
 Use curl or any API client to make a test call. First, create a Base64 encoded string of `admin:your_webhook_auth_token`:
 
@@ -246,10 +246,10 @@ Note: The call will be made from the OUTBOUND_PHONE_NUMBER specified in your .en
 
 </details>
 
-## API Documentation
+## 📚 API Documentation
 
 <details>
-  <summary>Available Endpoints</summary>
+  <summary>🔌 Available Endpoints</summary>
 
 1. `POST /api/make-call`
    - Makes an outbound call to confirm an appointment
@@ -260,7 +260,7 @@ Note: The call will be made from the OUTBOUND_PHONE_NUMBER specified in your .en
      {
          "orderId": "APT123",
          "customerPhone": "+6591234567",
-         "businessName": "Business Name",
+         "businessName": "Ana's Dental Clinic",
          "appointmentTime": "2025-04-20T19:30:00Z"
      }
      ```
@@ -273,7 +273,7 @@ Note: The call will be made from the OUTBOUND_PHONE_NUMBER specified in your .en
 
 </details>
 
- <details> <summary>Call Flow</summary>
+ <details> <summary>🔄 Call Flow</summary>
 
   1. System makes an outbound call to the customer
   2. Plays a message with appointment details
@@ -285,11 +285,11 @@ Note: The call will be made from the OUTBOUND_PHONE_NUMBER specified in your .en
 
 </details>
 
-## Additional Information
+## ℹ️ Additional Information
 
 <details>
   
-  <summary>Logging</summary>
+  <summary>📝 Logging</summary>
   
 The application includes detailed console logging for:
   - Incoming requests (method, URL, headers)
