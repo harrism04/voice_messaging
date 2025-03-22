@@ -26,7 +26,7 @@ sequenceDiagram
         note right of Provider: 1. Appointment Confirmation (30 min before)
         Provider->>Middleware: Send appointment data
         Note over Provider,Middleware: Triggered 30 minutes before scheduled time
-        Middleware->>Voice8x8: POST callflows API request
+        Middleware->>Voice8x8: POST callflows makeCall API request
         Voice8x8->>Client: Initiate outbound call
         Client->>Voice8x8: Answer call
         Voice8x8->>Client: Play appointment details and prompt for input
