@@ -366,6 +366,3 @@ async def startup_event():
     # 8x8 API details
     api_key = os.getenv("EIGHT_X_EIGHT_API_KEY")
     subaccount_id = os.getenv("EIGHT_X_EIGHT_SUBACCOUNT_ID")
-
-    # Construct the webhook URLs
-    vca_webhook_url = "https://enormously-balanced-lemur.ngrok-free.app/api/webhooks/vca"
