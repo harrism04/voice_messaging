@@ -10,11 +10,10 @@
     'lineColor': '#F8B229',
     'secondaryColor': '#006100',
     'tertiaryColor': '#fff',
-    'textColor': 'var(--color-fg-default)',
-    'noteTextColor': 'var(--color-fg-default)',
-    'noteBkgColor': '#fff5ad',
+    'textColor': '#fff',
     'noteTextColor': '#333',
-    'edgeLabelBackground': '#fff',
+    'noteBkgColor': '#fff5ad',
+    'edgeLabelBackground': 'rgba(0,0,0,0.5)',
     'background': 'transparent'
   }
 }}%%
@@ -23,7 +22,7 @@ sequenceDiagram
     participant Middleware as Integration Middleware
     participant Voice8x8 as 8x8 Voice API
     participant Customer as Customer
-    rect rgb(200, 220, 255)
+    rect rgb(100, 150, 220)
         note right of Platform: 1. Reservation Confirmation (30 min before)
         Platform->>Middleware: Send reservation data
         Note over Platform,Middleware: Triggered 30 minutes before reservation time
@@ -32,14 +31,14 @@ sequenceDiagram
         Customer->>Voice8x8: Answer call
         Voice8x8->>Customer: Play reservation details and prompt for input
     end
-    rect rgb(220, 255, 220)
+    rect rgb(100, 180, 120)
         note right of Customer: 2. Customer Response
         Customer->>Voice8x8: DTMF input (1=confirm, 0=cancel)
         Voice8x8->>Middleware: Webhook: customer response
         Middleware->>Platform: API call: update reservation status
         Voice8x8->>Customer: Play confirmation/cancellation message
     end
-    rect rgb(255, 220, 220)
+    rect rgb(200, 120, 120)
         note right of Voice8x8: 3. Call Summary
         Voice8x8->>Middleware: Webhook: session summary
         Middleware->>Platform: API call: final status update
