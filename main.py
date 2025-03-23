@@ -393,3 +393,18 @@ async def startup_event():
     # 8x8 API details
     api_key = os.getenv("EIGHT_X_EIGHT_API_KEY")
     subaccount_id = os.getenv("EIGHT_X_EIGHT_SUBACCOUNT_ID")
+    outbound_phone = os.getenv("OUTBOUND_PHONE_NUMBER")
+
+    # Validate all required credentials
+    missing_vars = []
+    if not api_key:
+        missing_vars.append("EIGHT_X_EIGHT_API_KEY")
+    if not subaccount_id:
+        missing_vars.append("EIGHT_X_EIGHT_SUBACCOUNT_ID")
+    if not outbound_phone:
+        missing_vars.append("OUTBOUND_PHONE_NUMBER")
+    
+    if missing_vars:
+        error_msg = f"Missing required environment variables: {', '.join(missing_vars)}"
+        logger.error(error_msg)
+        raise ValueError(error_msg)
