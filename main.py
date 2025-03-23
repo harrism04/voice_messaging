@@ -143,7 +143,8 @@ async def make_call(appointment: Appointment, authorization: str = Header(None))
         logger.info(f"Formatted source: {source_number}")
         logger.info(f"Original destination: {appointment.customerPhone}")
         logger.info(f"Formatted destination: {destination_number}")
-        
+
+        '''
         # Validate Singapore phone numbers (must be 65 + 8 digits)
         def validate_sg_number(number: str, number_type: str) -> str:
             if not number.isdigit():
@@ -158,6 +159,25 @@ async def make_call(appointment: Appointment, authorization: str = Header(None))
         source_number = validate_sg_number(source_number, "Source number")
         destination_number = validate_sg_number(destination_number, "Destination number")
         
+        logger.info(f"Final formatted numbers:")
+        logger.info(f"Source: {source_number}")
+        logger.info(f"Destination: {destination_number}")
+       '''
+        
+        # Validate international phone numbers
+        def validate_number(number: str, number_type: str) -> str:
+        # Strip all non-digits
+        number = ''.join(c for c in number if c.isdigit())
+        
+        # Basic validation
+        if len(number) < 7 or len(number) > 15:
+            raise ValueError(f"Invalid {number_type} length: {number}")
+        return number
+
+        # Format and validate numbers
+        source_number = validate_number(source_number, "Source number")
+        destination_number = validate_number(destination_number, "Destination number")
+
         logger.info(f"Final formatted numbers:")
         logger.info(f"Source: {source_number}")
         logger.info(f"Destination: {destination_number}")
