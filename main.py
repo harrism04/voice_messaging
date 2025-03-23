@@ -1,7 +1,7 @@
 from fastapi import FastAPI, HTTPException, Header, Request
 from typing import Optional
 from fastapi.responses import JSONResponse
-from pydantic import BaseModel
+from pydantic import BaseModel, validator
 from datetime import datetime, timedelta
 import httpx
 import os
@@ -25,6 +25,11 @@ logger = logging.getLogger(__name__)
 
 # Initialize FastAPI
 app = FastAPI()
+
+# Add health endpoint for Docker health checks
+@app.get("/health")
+async def health_check():
+    return {"status": "healthy"}
 
 # Constants
 VOICE_API_BASE_URL = "https://voice.wavecell.com/api/v1"
@@ -123,7 +128,29 @@ async def make_call(appointment: Appointment, authorization: str = Header(None))
     
     try:
         # Format time for voice message
-        formatted_time = appointment.appointmentTime.strftime("%I:%M %p")
+        hour = appointment.appointmentTime.strftime("%I")
+        minute = appointment.appointmentTime.strftime("%M")
+        am_pm = appointment.appointmentTime.strftime("%p")
+        
+        # Create time string (e.g., "7:30 PM")
+        if minute == "00":
+            formatted_time = f"{hour} {am_pm}"  # Just "7 PM" for on-the-hour times
+        else:
+            formatted_time = f"{hour}:{minute} {am_pm}"  # "7:30 PM" for other times
+        
+        # Format date for voice message in a TTS-friendly way
+        # Spell out the date in a way that will be read naturally
+        day = int(appointment.appointmentTime.strftime("%d"))
+        month = appointment.appointmentTime.strftime("%B")
+        year = appointment.appointmentTime.strftime("%Y")
+        day_suffix = "th"
+        if day % 10 == 1 and day != 11:
+            day_suffix = "st"
+        elif day % 10 == 2 and day != 12:
+            day_suffix = "nd"
+        elif day % 10 == 3 and day != 13:
+            day_suffix = "rd"
+        formatted_date = f"{month} {day}{day_suffix}, {year}"
         
         # Generate client action ID with readable datetime
         formatted_datetime = appointment.appointmentTime.strftime("%Y%m%d_%H%M")
@@ -143,21 +170,21 @@ async def make_call(appointment: Appointment, authorization: str = Header(None))
         logger.info(f"Formatted source: {source_number}")
         logger.info(f"Original destination: {appointment.customerPhone}")
         logger.info(f"Formatted destination: {destination_number}")
+
+        # Validate international phone numbers
+        def validate_number(number: str, number_type: str) -> str:
+        # Strip all non-digits
+            number = ''.join(c for c in number if c.isdigit())
         
-        # Validate Singapore phone numbers (must be 65 + 8 digits)
-        def validate_sg_number(number: str, number_type: str) -> str:
-            if not number.isdigit():
-                raise ValueError(f"{number_type} contains non-digit characters: {number}")
-            if not number.startswith('65'):
-                number = '65' + number.lstrip('0')
-            if len(number) != 10:  # 65 + 8 digits
-                raise ValueError(f"{number_type} must be 10 digits (65 + 8 digits), got {len(number)} digits: {number}")
+        # Basic validation
+            if len(number) < 7 or len(number) > 15:
+                raise ValueError(f"Invalid {number_type} length: {number}")
             return number
-        
+
         # Format and validate numbers
-        source_number = validate_sg_number(source_number, "Source number")
-        destination_number = validate_sg_number(destination_number, "Destination number")
-        
+        source_number = validate_number(source_number, "Source number")
+        destination_number = validate_number(destination_number, "Destination number")
+
         logger.info(f"Final formatted numbers:")
         logger.info(f"Source: {source_number}")
         logger.info(f"Destination: {destination_number}")
@@ -177,8 +204,8 @@ async def make_call(appointment: Appointment, authorization: str = Header(None))
                 {
                     "action": "sayAndCapture",
                     "params": {
-                        "promptMessage": f"Hello, you have an appointment at {appointment.businessName} at {formatted_time} made through our platform. Will you be arriving on time? If yes, press one. If you wish to cancel, press zero.",
-                        "voiceProfile": "en-US-BenjaminRUS",
+                        "promptMessage": f"Hello, you have an appointment at {appointment.businessName} on {formatted_date} at {formatted_time}. Will you be arriving on time? If yes, press one. If you wish to cancel, press zero.",
+                        "voiceProfile": "en-US-BenjaminRUS", # You may choose a different voice profile
                         "repetition": 2,
                         "speed": 1,
                         "minDigits": 1,
@@ -287,7 +314,7 @@ async def vca_webhook(request: Request, authorization: str = Header(None)):
                         "action": "say",
                         "params": {
                             "text": "Thank you for confirming. We look forward to seeing you at your appointment time.",
-                            "voiceProfile": "en-US-BenjaminRUS",
+                            "voiceProfile": "en-US-BenjaminRUS", # You may choose a different voice profile
                             "repetition": 1,
                             "speed": 1
                         }
@@ -307,7 +334,7 @@ async def vca_webhook(request: Request, authorization: str = Header(None)):
                         "action": "say",
                         "params": {
                             "text": "Your appointment has been cancelled. Thank you for letting us know.",
-                            "voiceProfile": "en-US-BenjaminRUS",
+                            "voiceProfile": "en-US-BenjaminRUS", # You may choose a different voice profile
                             "repetition": 1,
                             "speed": 1
                         }
@@ -366,6 +393,3 @@ async def startup_event():
     # 8x8 API details
     api_key = os.getenv("EIGHT_X_EIGHT_API_KEY")
     subaccount_id = os.getenv("EIGHT_X_EIGHT_SUBACCOUNT_ID")
-
-    # Construct the webhook URLs
-    vca_webhook_url = "https://enormously-balanced-lemur.ngrok-free.app/api/webhooks/vca"
