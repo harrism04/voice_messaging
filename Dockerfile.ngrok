@@ -1,7 +1,7 @@
 FROM alpine:3.18
 
 # Install dependencies
-RUN apk add --no-cache curl unzip bash ca-certificates
+RUN apk add --no-cache curl unzip bash ca-certificates netcat-openbsd
 
 # Set ngrok version
 ENV NGROK_VERSION=v3.6.0

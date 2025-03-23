@@ -1,55 +1,45 @@
-version: '3.8'
+# Voice IVR System Docker Compose Configuration
+
 services:
-  reservation-system:
-    build: .
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile
     ports:
-      - '5678:5678'
-    environment:
-      - 'EIGHT_X_EIGHT_API_KEY=${EIGHT_X_EIGHT_API_KEY}'
-      - 'EIGHT_X_EIGHT_SUBACCOUNT_ID=${EIGHT_X_EIGHT_SUBACCOUNT_ID}'
-      - 'OUTBOUND_PHONE_NUMBER=${OUTBOUND_PHONE_NUMBER}'
-      - 'WEBHOOK_AUTH_TOKEN=${WEBHOOK_AUTH_TOKEN}'
-      - 'WEBHOOK_BASE_URL=${WEBHOOK_BASE_URL}'
+      - "5678:5678"
     volumes:
-      - './.env:/app/.env'
+      - .:/app
+      - /app/node_modules
+    environment:
+      - PORT=5678
+      - WEBHOOK_AUTH_TOKEN=${WEBHOOK_AUTH_TOKEN}
+      - EIGHT_X_EIGHT_API_KEY=${EIGHT_X_EIGHT_API_KEY}
+      - EIGHT_X_EIGHT_SUBACCOUNT_ID=${EIGHT_X_EIGHT_SUBACCOUNT_ID}
+      - OUTBOUND_PHONE_NUMBER=${OUTBOUND_PHONE_NUMBER}
     healthcheck:
-      test:
-        - CMD
-        - curl
-        - '-f'
-        - 'http://localhost:5678/docs'
-      interval: 30s
+      test: ["CMD", "curl", "-f", "http://localhost:5678/health"]
+      interval: 10s
       timeout: 10s
-      retries: 3
-
-  # Simple ngrok configuration with static domain
-  # ngrok:
-  #   image: 'ngrok/ngrok:latest'
-  #   platform: linux/amd64
-  #   ports:
-  #     - '4040:4040'
-  #   volumes:
-  #     - './ngrok.yml:/etc/ngrok.yml'
-  #   environment:
-  #     - 'NGROK_AUTHTOKEN=${NGROK_AUTHTOKEN}'
-  #   command: ["ngrok", "http", "reservation-system:5678"]
-  #   depends_on:
-  #     reservation-system:
-  #       condition: service_started
-
-  # OPTION 2: Use custom ngrok image with latest version
+      retries: 5
+      start_period: 10s
+    restart: unless-stopped
+  # Custom ngrok service
   ngrok-custom:
     build:
       context: .
       dockerfile: Dockerfile.ngrok
     ports:
-      - '4040:4040'
-    volumes:
-      - './.env:/app/.env'
+      - "4040:4040"
     environment:
-      - 'NGROK_AUTHTOKEN=${NGROK_AUTHTOKEN}'
-      - 'NGROK_PORT=reservation-system:5678'
-      - 'NGROK_OPTS=--log=stdout --domain=enormously-balanced-lemur.ngrok-free.app'
+      - NGROK_AUTHTOKEN=${NGROK_AUTHTOKEN}
+      - WEBHOOK_BASE_URL=${WEBHOOK_BASE_URL}
+      - TARGET_HOST=backend
+      - TARGET_PORT=5678
     depends_on:
-      reservation-system:
-        condition: service_started
+      backend:
+        condition: service_healthy
+    restart: unless-stopped
+
+networks:
+  default:
+    name: voice_ivr_static_network
