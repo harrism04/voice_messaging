@@ -173,10 +173,10 @@ async def make_call(appointment: Appointment, authorization: str = Header(None))
 
         # Validate international phone numbers
         def validate_number(number: str, number_type: str) -> str:
-        # Strip all non-digits
+            # Strip all non-digits
             number = ''.join(c for c in number if c.isdigit())
         
-        # Basic validation
+            # Basic validation
             if len(number) < 7 or len(number) > 15:
                 raise ValueError(f"Invalid {number_type} length: {number}")
             return number
@@ -184,7 +184,7 @@ async def make_call(appointment: Appointment, authorization: str = Header(None))
         # Format and validate numbers
         source_number = validate_number(source_number, "Source number")
         destination_number = validate_number(destination_number, "Destination number")
-
+        
         logger.info(f"Final formatted numbers:")
         logger.info(f"Source: {source_number}")
         logger.info(f"Destination: {destination_number}")
