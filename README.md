@@ -69,8 +69,8 @@ Each use case can be implemented by customizing the voice prompts and workflow i
   
   1. Clone the repository:
      ```bash
-     git clone https://github.com/harrism04/voice_restaurant_ivr.git
-     cd voice_restaurant_ivr
+     git clone https://github.com/harrism04/voice_ivr_static.git
+     cd voice_ivr_static
      ```
 
   2. Set up environment variables:
