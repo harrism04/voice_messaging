@@ -73,7 +73,7 @@ Each use case simply requires customizing the message content in your API reques
   
   1. Clone the repository:
      ```bash
-     git clone https://github.com/harrism04/voice_ivr_static.git
+     git clone https://github.com/harrism04/voice_messaging.git
      cd voice_ivr_static
      ```
 
