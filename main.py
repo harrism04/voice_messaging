@@ -35,11 +35,11 @@ async def health_check():
 VOICE_API_BASE_URL = "https://voice.wavecell.com/api/v1"
 
 # Models
-class Appointment(BaseModel):
-    orderId: str
+class MessageCall(BaseModel):
+    messageId: str
     customerPhone: str
-    businessName: str
-    appointmentTime: datetime
+    message: str
+    repetition: int = 2  # How many times to repeat the message
 
 # In-memory store for active calls
 class CallStore:
@@ -97,8 +97,8 @@ async def log_requests(request: Request, call_next):
 
 # Make call endpoint
 @app.post("/api/make-call")
-async def make_call(appointment: Appointment, authorization: str = Header(None)):
-    logger.info(f"Request body: {appointment.dict()}")
+async def make_call(message_call: MessageCall, authorization: str = Header(None)):
+    logger.info(f"Request body: {message_call.dict()}")
     logger.info(f"Authorization header: {authorization}")
     # Get environment variables
     api_key = os.getenv("EIGHT_X_EIGHT_API_KEY")
@@ -127,42 +127,16 @@ async def make_call(appointment: Appointment, authorization: str = Header(None))
         )
     
     try:
-        # Format time for voice message
-        hour = appointment.appointmentTime.strftime("%I")
-        minute = appointment.appointmentTime.strftime("%M")
-        am_pm = appointment.appointmentTime.strftime("%p")
-        
-        # Create time string (e.g., "7:30 PM")
-        if minute == "00":
-            formatted_time = f"{hour} {am_pm}"  # Just "7 PM" for on-the-hour times
-        else:
-            formatted_time = f"{hour}:{minute} {am_pm}"  # "7:30 PM" for other times
-        
-        # Format date for voice message in a TTS-friendly way
-        # Spell out the date in a way that will be read naturally
-        day = int(appointment.appointmentTime.strftime("%d"))
-        month = appointment.appointmentTime.strftime("%B")
-        year = appointment.appointmentTime.strftime("%Y")
-        day_suffix = "th"
-        if day % 10 == 1 and day != 11:
-            day_suffix = "st"
-        elif day % 10 == 2 and day != 12:
-            day_suffix = "nd"
-        elif day % 10 == 3 and day != 13:
-            day_suffix = "rd"
-        formatted_date = f"{month} {day}{day_suffix}, {year}"
-        
-        # Generate client action ID with readable datetime
-        formatted_datetime = appointment.appointmentTime.strftime("%Y%m%d_%H%M")
-        sanitized_business_name = appointment.businessName.replace(' ', '_')
-        client_action_id = f"{appointment.orderId}_{formatted_datetime}_{sanitized_business_name}"
+        # Generate client action ID with timestamp
+        formatted_datetime = datetime.utcnow().strftime("%Y%m%d_%H%M%S")
+        client_action_id = f"{message_call.messageId}_{formatted_datetime}"
         
         # Set validUntil to 1 hour from now
         valid_until = (datetime.utcnow() + timedelta(hours=1)).strftime("%Y-%m-%dT%H:%M:%SZ")
         
         # Format phone numbers for API
         source_number = outbound_phone.lstrip('+')
-        destination_number = appointment.customerPhone.lstrip('+')
+        destination_number = message_call.customerPhone.lstrip('+')
         
         # Log phone number details for debugging
         logger.info(f"Phone number details:")
@@ -189,7 +163,7 @@ async def make_call(appointment: Appointment, authorization: str = Header(None))
         logger.info(f"Source: {source_number}")
         logger.info(f"Destination: {destination_number}")
         
-        # Prepare the initial call request
+        # Prepare the call request with simple message delivery
         request_body = {
             "clientActionId": client_action_id,
             "validUntil": valid_until,
@@ -202,21 +176,17 @@ async def make_call(appointment: Appointment, authorization: str = Header(None))
                     }
                 },
                 {
-                    "action": "sayAndCapture",
+                    "action": "say",
                     "params": {
-                        "promptMessage": f"Hello, you have an appointment at {appointment.businessName} on {formatted_date} at {formatted_time}. Will you be arriving on time? If yes, press one. If you wish to cancel, press zero.",
-                        "voiceProfile": "en-US-BenjaminRUS", # You may choose a different voice profile
-                        "repetition": 2,
-                        "speed": 1,
-                        "minDigits": 1,
-                        "maxDigits": 1,
-                        "digitTimeout": 10000,
-                        "overallTimeout": 10000,
-                        "completeOnHash": False,
-                        "noOfTries": 2,
-                        "successMessage": None,
-                        "failureMessage": "Invalid input, please try again"
+                        "text": message_call.message,
+                        "voiceProfile": "en-US-BenjaminRUS",
+                        "repetition": message_call.repetition,
+                        "speed": 1
                     }
+                },
+                {
+                    "action": "hangup",
+                    "params": {}
                 }
             ]
         }
@@ -248,9 +218,8 @@ async def make_call(appointment: Appointment, authorization: str = Header(None))
                 raise ValueError(f"No sessionId in 8x8 API response: {response_data}")
                 
             call_store.add_call(response_data["sessionId"], {
-                "state": "initial",
-                "appointment": appointment.dict(),
-                "formatted_time": formatted_time,
+                "state": "message_delivered",
+                "message_call": message_call.dict(),
                 "client_action_id": client_action_id,
                 "session_id": response_data["sessionId"]
             })
@@ -281,88 +250,28 @@ async def vca_webhook(request: Request, authorization: str = Header(None)):
     # Process webhook and prepare response
     payload = raw_json.get("payload", {})
     session_id = payload.get("sessionId")
-    dtmf_input = None
-    event_data = payload.get("eventData", {})
-    
-    if isinstance(event_data, dict):
-        dtmf_input = event_data.get("dtmf")
-    elif isinstance(event_data, str):
-        dtmf_input = event_data
-    
-    logger.info(f"Extracted DTMF input: {dtmf_input}")
-    
     client_action_id = payload.get("clientActionId")
     call_data = call_store.get_call(session_id)
     
     if not call_data:
         client_action_id = client_action_id or f"recovered_{session_id}"
         call_data = {
-            "state": "initial",
+            "state": "message_delivered",
             "client_action_id": client_action_id,
             "session_id": session_id
         }
         call_store.add_call(session_id, call_data)
     
-    # Process the IVR response based on the current state and input
-    response = None
-    if dtmf_input:
-        if dtmf_input == "1":
-            response = {
-                "clientActionId": call_data["client_action_id"],
-                "callflow": [
-                    {
-                        "action": "say",
-                        "params": {
-                            "text": "Thank you for confirming. We look forward to seeing you at your appointment time.",
-                            "voiceProfile": "en-US-BenjaminRUS", # You may choose a different voice profile
-                            "repetition": 1,
-                            "speed": 1
-                        }
-                    },
-                    {
-                        "action": "hangup",
-                        "params": {}
-                    }
-                ]
+    # For message delivery, we just acknowledge and hangup on any input
+    response = {
+        "clientActionId": call_data["client_action_id"],
+        "callflow": [
+            {
+                "action": "hangup",
+                "params": {}
             }
-            call_data["state"] = "confirmed"
-        elif dtmf_input == "0":
-            response = {
-                "clientActionId": call_data["client_action_id"],
-                "callflow": [
-                    {
-                        "action": "say",
-                        "params": {
-                            "text": "Your appointment has been cancelled. Thank you for letting us know.",
-                            "voiceProfile": "en-US-BenjaminRUS", # You may choose a different voice profile
-                            "repetition": 1,
-                            "speed": 1
-                        }
-                    },
-                    {
-                        "action": "hangup",
-                        "params": {}
-                    }
-                ]
-            }
-            call_data["state"] = "cancelled"
-    
-    if not response:
-        if call_data["state"] == "initial":
-            response = {
-                "clientActionId": call_data["client_action_id"],
-                "callflow": []
-            }
-        else:
-            response = {
-                "clientActionId": call_data["client_action_id"],
-                "callflow": [
-                    {
-                        "action": "hangup",
-                        "params": {}
-                    }
-                ]
-            }
+        ]
+    }
     
     logger.info(f"Sending VCA webhook response: {response}")
     return JSONResponse(content=response)

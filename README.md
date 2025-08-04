@@ -1,6 +1,6 @@
-# 📞 8x8 Voice API (CPaaS) - Appointment Confirmation System
+# 📞 8x8 Voice API (CPaaS) - Voice Messaging System
 
-This project implements an automated appointment confirmation system using the 8x8 Voice API. It allows you to simulate outbound calls to customers to confirm their appointments using an Interactive Voice Response (IVR) system.
+This project implements a simple voice messaging system using the 8x8 Voice API. It allows you to make outbound calls to deliver voice messages for notifications, OTP codes, alerts, or any other automated voice communications.
 
 ## 📋 Table of Contents
 - [Common Use Cases](#-common-use-cases)
@@ -14,23 +14,27 @@ This project implements an automated appointment confirmation system using the 8
 
 ## 🎯 Common Use Cases
 
-This system can be adapted for various scenarios, including:
+This voice messaging system can be used for various scenarios, including:
 
-- Medical appointments and healthcare consultations
-- Restaurant reservations and dining bookings
-- Salon and spa services
-- Vehicle service appointments and maintenance
-- Professional consultations (legal, financial, real estate)
+- **OTP Delivery**: Send one-time passwords for authentication
+- **Notification Alerts**: Deliver important notifications or reminders
+- **Emergency Alerts**: Send urgent messages to multiple recipients
+- **Marketing Messages**: Deliver promotional or informational content
+- **System Status Updates**: Notify users about service updates or maintenance
+- **Payment Reminders**: Send payment due notifications
+- **Event Reminders**: Remind users about upcoming events or appointments
 
-Each use case can be implemented by customizing the voice prompts and workflow in the application configuration.
+Each use case simply requires customizing the message content in your API request.
 
 ## ✨ Features
 
-- Outbound calls to confirm appointments or reservations
-- Interactive voice menu for customers to confirm or cancel
+- Simple outbound voice message delivery
+- Text-to-speech (TTS) powered by 8x8 Voice API
+- Configurable message repetition (1-10 times)
 - Real-time webhook handling for call events
 - Session tracking for call state management
 - Detailed logging for debugging and monitoring
+- Support for any message content (notifications, OTP, alerts, etc.)
 
 ## 📋 Prerequisites
 
@@ -83,7 +87,7 @@ Each use case can be implemented by customizing the voice prompts and workflow i
      EIGHT_X_EIGHT_SUBACCOUNT_ID=your_subaccount_id
      OUTBOUND_PHONE_NUMBER=your_virtual_number  # Must be in international format e.g for SG +6591234567
      WEBHOOK_AUTH_TOKEN=your_randomly_generated_webhook_auth_token
-     WEBHOOK_BASE_URL=your_static_ngrok_domain  # e.g., https://your-domain.ngrok-free.app
+     WEBHOOK_BASE_URL=your_static_ngrok_url  # e.g., https://your-domain.ngrok-free.app
      NGROK_AUTHTOKEN=your_ngrok_authtoken
      ```
      Note: The `OUTBOUND_PHONE_NUMBER` is used as the source number for all outbound calls. It must be a valid 8x8 virtual number configured in your account. Reach out to cpaas-support@8x8.com or your account manager if unsure.
@@ -91,10 +95,6 @@ Each use case can be implemented by customizing the voice prompts and workflow i
   3. Configure your static ngrok domain:
      - Go to https://dashboard.ngrok.com/domains to find your static ngrok domain or create one if you haven't already.
      - Update `WEBHOOK_BASE_URL` in your `.env` file with your static ngrok domain.
-     - Edit the `docker-compose.yml` file and update the `--domain` parameter in the `NGROK_OPTS` environment variable with your static domain:
-       ```yaml
-       - 'NGROK_OPTS=--log=stdout --domain=your-domain.ngrok-free.app'
-       ```
      
      Note: The ngrok configuration is automatically generated inside the container, so you don't need to manually create or edit an ngrok.yml file.
 
@@ -161,7 +161,7 @@ Each use case can be implemented by customizing the voice prompts and workflow i
      EIGHT_X_EIGHT_SUBACCOUNT_ID=your_subaccount_id
      OUTBOUND_PHONE_NUMBER=your_virtual_number  # Must be in international format e.g for SG +6591234567
      WEBHOOK_AUTH_TOKEN=your_randomly_generated_webhook_auth_token
-     WEBHOOK_BASE_URL=your_static_ngrok_domain  # e.g., https://your-domain.ngrok-free.app
+     WEBHOOK_BASE_URL=your_static_ngrok_url  # e.g., https://your-domain.ngrok-free.app
      NGROK_AUTHTOKEN=your_ngrok_authtoken
      ```
      Note: The `OUTBOUND_PHONE_NUMBER` is used as the source number for all outbound calls. It must be a valid 8x8 virtual number configured in your account.
@@ -226,15 +226,30 @@ Use curl or any API client to make a test call. First, create a Base64 encoded s
   ```
 
 Then use the encoded string in your API call:
+
+**Notification Message Example:**
 ```bash
 curl --location 'http://localhost:5678/api/make-call' \
 --header 'Authorization: Basic YOUR_BASE64_ENCODED_STRING' \
 --header 'Content-Type: application/json' \
 --data '{
-    "orderId": "APT123",
+    "messageId": "NOTIF123",
     "customerPhone": "+6591234567",
-    "businessName": "Business Name",
-    "appointmentTime": "2025-04-20T19:30:00Z"
+    "message": "Hello, this is a notification from our system. Your account has been updated successfully.",
+    "repetition": 2
+}'
+```
+
+**OTP Message Example:**
+```bash
+curl --location 'http://localhost:5678/api/make-call' \
+--header 'Authorization: Basic YOUR_BASE64_ENCODED_STRING' \
+--header 'Content-Type: application/json' \
+--data '{
+    "messageId": "OTP789",
+    "customerPhone": "+6591234567",
+    "message": "Your verification code is 1 2 3 4 5 6. Please enter this code to complete your authentication.",
+    "repetition": 3
 }'
 ```
 
@@ -253,16 +268,16 @@ Note: The call will be made from the OUTBOUND_PHONE_NUMBER specified in your .en
   <summary>🔌 Available Endpoints</summary>
 
 1. `POST /api/make-call`
-   - Makes an outbound call to confirm an appointment
+   - Makes an outbound call to deliver a voice message
    - Uses OUTBOUND_PHONE_NUMBER from .env as the source number
    - Requires Basic Auth (admin:WEBHOOK_AUTH_TOKEN encoded in Base64)
    - Request body example:
      ```json
      {
-         "orderId": "APT123",
+         "messageId": "MSG123",
          "customerPhone": "+6591234567",
-         "businessName": "Ana's Dental Clinic",
-         "appointmentTime": "2025-04-20T19:30:00Z"
+         "message": "Your verification code is 123456",
+         "repetition": 2
      }
      ```
 
@@ -277,12 +292,10 @@ Note: The call will be made from the OUTBOUND_PHONE_NUMBER specified in your .en
  <details> <summary>🔄 Call Flow</summary>
 
   1. System makes an outbound call to the customer
-  2. Plays a message with appointment details
-  3. Customer inputs DTMF:
-     - Press 1 to confirm
-     - Press 0 to cancel
-  4. System responds with confirmation/cancellation message
-  5. Call ends with appropriate status
+  2. Plays the specified message using text-to-speech
+  3. Message is repeated based on the `repetition` parameter
+  4. Call automatically hangs up after message delivery
+  5. Webhooks handle any call events and respond appropriately
 
 </details>
 
@@ -296,23 +309,3 @@ Note: The call will be made from the OUTBOUND_PHONE_NUMBER specified in your .en
   1. http://localhost:4040/ (legacy but cleaner interface)
   2. https://dashboard.ngrok.com/ → "Traffic Inspector" in the left menu
 </details>
-
-## 🎥 Video Walkthrough
-  
-  <div>
-    <a href="https://www.loom.com/share/0b03f0c84b494eab8cd86e1087eca861">
-      <p>Code Implementation Walkthrough - Watch Video</p>
-    </a>
-    <a href="https://www.loom.com/share/0b03f0c84b494eab8cd86e1087eca861">
-      <img style="max-width:300px;" src="https://cdn.loom.com/sessions/thumbnails/0b03f0c84b494eab8cd86e1087eca861-with-play.gif">
-    </a>
-  </div>
-  
-  <div>
-    <a href="https://www.loom.com/share/ace1f2a8c546482eb66ffd88c11b5bdc">
-      <p>Walkthrough ngrok Traffic Inspector for 8x8 Voice Call - Watch Video</p>
-    </a>
-    <a href="https://www.loom.com/share/ace1f2a8c546482eb66ffd88c11b5bdc">
-      <img style="max-width:300px;" src="https://cdn.loom.com/sessions/thumbnails/ace1f2a8c546482eb66ffd88c11b5bdc-with-play.gif">
-    </a>
-  </div>
