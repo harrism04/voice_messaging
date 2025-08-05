@@ -142,7 +142,7 @@ async def make_call(message_call: MessageCall, authorization: str = Header(None)
         logger.info(f"Phone number details:")
         logger.info(f"Original source (from .env): {outbound_phone}")
         logger.info(f"Formatted source: {source_number}")
-        logger.info(f"Original destination: {appointment.customerPhone}")
+        logger.info(f"Original destination: {message_call.customerPhone}")
         logger.info(f"Formatted destination: {destination_number}")
 
         # Validate international phone numbers
